@@ -1,0 +1,23 @@
+{
+  "name": "mytinywms/magento2-mytinywms",
+  "description": "Magento 2 MyTinyWMS-Connector",
+  "type": "magento2-module",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Alexander Reichardt <mail@alexander-reichardt.de>",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": "~7.1.0|~7.2.0|~7.3.0"
+  },
+  "autoload": {
+    "files": [
+      "src/registration.php"
+    ],
+    "psr-4": {
+      "MyTinyWMS\\API\\": "/src"
+    }
+  }
+}
