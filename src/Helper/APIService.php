@@ -54,33 +54,41 @@ class APIService extends AbstractHelper {
          * check if we have a article group
          */
         $response = $this->doRequest('article-group', ['filter[external_article_number]' => $sku]);
-        $articleGroups = json_decode($response->getBody()->getContents(), true);
-        if (is_array($articleGroups) && count($articleGroups) == 1) {
-            $id = $articleGroups[0]['id'];
-            $response = $this->doRequest("article-group/{$id}/changeQuantity", [
-                'change' => $quantity,
-                'note' => $note,
-                'type' => 2
-            ], 'POST');
+        if ($response->getStatusCode() == 200) {
+            $articleGroups = json_decode($response->getBody()->getContents(), true);
+            if (is_array($articleGroups) && count($articleGroups) == 1) {
+                $id = $articleGroups[0]['id'];
+                $this->_logger->info('Updating Article Group '.$id.' in MyTinyWMS');
+                $response = $this->doRequest("article-group/{$id}/changeQuantity", [
+                    'change' => $quantity,
+                    'note' => $note,
+                    'type' => 2
+                ], 'POST');
 
-            return $response->getStatusCode() == 200;
+                return $response->getStatusCode() == 200;
+            }
         }
 
         /**
          * no group found, check for single article
          */
         $response = $this->doRequest('article', ['filter[external_article_number]' => $sku]);
-        $articles = json_decode($response->getBody()->getContents(), true);
-        if (is_array($articles) && count($articles) == 1) {
-            $id = $articles[0]['id'];
-            $response = $this->doRequest("article/{$id}/changeQuantity", [
-                'change' => $quantity,
-                'note' => $note,
-                'type' => 2
-            ], 'POST');
+        if ($response->getStatusCode() == 200) {
+            $articles = json_decode($response->getBody()->getContents(), true);
+            if (is_array($articles) && count($articles) == 1) {
+                $id = $articles[0]['id'];
+                $this->_logger->info('Updating Article '.$id.' in MyTinyWMS');
+                $response = $this->doRequest("article/{$id}/changeQuantity", [
+                    'change' => $quantity,
+                    'note' => $note,
+                    'type' => 2
+                ], 'POST');
 
-            return $response->getStatusCode() == 200;
+                return $response->getStatusCode() == 200;
+            }
         }
+
+        $this->_logger->notice('No article or article group in MyTinyWMS found for SKU '.$sku);
 
         return false;
     }
@@ -107,9 +115,11 @@ class APIService extends AbstractHelper {
             $options['json'] = $params;
         }
 
+        $baseUri = rtrim($this->helperData->getGeneralConfig('main_url'),"/").'/';
+
         /** @var Client $client */
         $client = $this->clientFactory->create(['config' => [
-            'base_uri' => $this->helperData->getGeneralConfig('main_url')
+            'base_uri' => $baseUri
         ]]);
 
         try {
@@ -119,6 +129,8 @@ class APIService extends AbstractHelper {
                 $options
             );
         } catch (GuzzleException $exception) {
+            $this->_logger->error('['.$exception->getCode().'] '.$exception->getMessage());
+
             /** @var Response $response */
             $response = $this->responseFactory->create([
                 'status' => $exception->getCode(),

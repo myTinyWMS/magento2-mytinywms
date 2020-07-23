@@ -17,4 +17,5 @@ php bin/magento setup:upgrade
 - Create an API Token within MyTinyWMS with read and write access for Articles and Article Groups
 - Open Magento Admin, go to Stores - Configuration - MyTinyWMS
 - Enter API Endpoint
+    - Example: https://mytinywms.yourdomain.com/api/v1
 - Enter API Token
